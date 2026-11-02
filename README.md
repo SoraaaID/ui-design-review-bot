@@ -136,6 +136,18 @@ review-output/
   > Element <span> has font-size 10px below minimum...
 ```
 
+## 📸 Example Output
+
+A real run of the bot: the design reference is a screenshot of a landing page's original version, and the live page is a later build with a few regressions — a washed-out CTA button, a missing hero image, a resized headline, and shortened footer text. The bot found 5 issues (17.38% pixel difference).
+
+**Annotated screenshot** — numbered boxes mark each detected issue; the numbers match the `[#n] labels in `checklist.md`:
+
+![Annotated screenshot example](assets/example-annotated.png)
+
+**Diff overlay** — changed pixels highlighted against the design reference:
+
+![Diff overlay example](assets/example-diff.png)
+
 ---
 
 ## 🏗️ Project Structure
