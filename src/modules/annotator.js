@@ -30,7 +30,7 @@ const SEVERITY_COLORS = {
  * @param {string} opts.outputDir - Output directory
  * @returns {Promise<string>} Path to annotated screenshot
  */
-export async function annotateScreenshot({ screenshotPath, issues, outputDir }) {
+export async function annotateScreenshot({ screenshotPath, issues, outputDir, regionScale = 1 }) {
   const outputPath = path.join(outputDir, 'annotated-screenshot.png');
 
   // Get image dimensions
@@ -64,13 +64,20 @@ export async function annotateScreenshot({ screenshotPath, issues, outputDir }) 
   const svgAnnotations = annotatable.map((issue, idx) => {
     const color = SEVERITY_COLORS[issue.severity] || SEVERITY_COLORS.minor;
 
-    // Clamp region to image bounds
-    const x = Math.max(0, Math.min(issue.region.x, width - 4));
-    const y = Math.max(0, Math.min(issue.region.y, height - 4));
-    const w = Math.min(issue.region.width, width - x);
-    const h = Math.min(issue.region.height, height - y);
+    // Issue regions are in CSS pixels; the screenshot is rendered at
+    // regionScale (deviceScaleFactor), so scale up before drawing.
+    const rx = issue.region.x * regionScale;
+    const ry = issue.region.y * regionScale;
+    const rw = issue.region.width * regionScale;
+    const rh = issue.region.height * regionScale;
 
-    const labelNum = idx + 1;
+    // Clamp region to image bounds
+    const x = Math.max(0, Math.min(rx, width - 4));
+    const y = Math.max(0, Math.min(ry, height - 4));
+    const w = Math.min(rw, width - x);
+    const h = Math.min(rh, height - y);
+
+    const labelNum = issue.num ?? idx + 1;
     const labelSize = 22;
     const labelX = Math.min(x, width - labelSize - 4);
     const labelY = Math.max(y - labelSize, 0);

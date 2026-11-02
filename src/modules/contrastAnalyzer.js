@@ -44,18 +44,26 @@ export async function analyzeContrast({ page, screenshotPath }) {
     }
 
     /**
-     * Walk up DOM to find effective background color
+     * Walk up DOM to find effective background color.
+     * Transparent colors (alpha 0) are skipped — a page with no explicit
+     * background renders on the browser's default white canvas, NOT black.
+     * Semi-transparent colors are composited over white.
      */
     function getEffectiveBg(el) {
       let current = el;
-      while (current && current !== document.body) {
+      while (current) {
         const bg = window.getComputedStyle(current).backgroundColor;
-        if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
-          return bg;
+        const parsed = bg ? parseColor(bg) : null;
+        if (parsed && parsed.a > 0) {
+          if (parsed.a >= 1) return bg;
+          const r = Math.round(parsed.r * parsed.a + 255 * (1 - parsed.a));
+          const g = Math.round(parsed.g * parsed.a + 255 * (1 - parsed.a));
+          const b = Math.round(parsed.b * parsed.a + 255 * (1 - parsed.a));
+          return `rgb(${r}, ${g}, ${b})`;
         }
         current = current.parentElement;
       }
-      return window.getComputedStyle(document.body).backgroundColor || 'rgb(255, 255, 255)';
+      return 'rgb(255, 255, 255)';
     }
 
     let count = 0;

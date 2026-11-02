@@ -147,8 +147,11 @@ export async function generateChecklist({
     sorted.forEach(issue => {
       const emoji = SEVERITY_EMOJI[issue.severity];
       const severityBadge = issue.severity.charAt(0).toUpperCase() + issue.severity.slice(1);
+      // Prefer the stable number assigned by the orchestrator (matches the
+      // annotated screenshot); fall back to the running counter.
+      const displayNum = issue.num ?? globalIssueNum;
 
-      md += `- [ ] **[#${globalIssueNum}]** ${emoji} \`${severityBadge}\` — **${issue.title}**\n`;
+      md += `- [ ] **[#${displayNum}]** ${emoji} \`${severityBadge}\` — **${issue.title}**\n`;
       md += `  > ${issue.description}\n`;
 
       if (issue.region) {

@@ -148,5 +148,6 @@ export async function captureScreenshot({ url, viewport, selector, waitMs, outpu
     layoutIssues,
     brokenImages,
     viewport,
+    deviceScaleFactor: 2, // Must match the newContext deviceScaleFactor above
   };
 }
