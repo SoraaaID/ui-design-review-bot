@@ -81,12 +81,21 @@ export async function runReview(config, spinner) {
   pixelDiffPercent = comparisonResult.diffPercent;
 
   if (comparisonResult.diffPercent > 1) {
+    // maxDiffRegion is in screenshot image pixels; normalize it to CSS pixels
+    // so it shares one coordinate space with every analyzer issue region.
+    const dsf = primaryResult.deviceScaleFactor || 1;
+    const imgRegion = comparisonResult.maxDiffRegion;
     allIssues.push({
       category: 'spacing-layout',
       severity: comparisonResult.diffPercent > 10 ? 'critical' : comparisonResult.diffPercent > 5 ? 'major' : 'minor',
       title: 'Visual pixel difference detected',
       description: `${comparisonResult.diffPercent.toFixed(2)}% of pixels differ from design reference`,
-      region: comparisonResult.maxDiffRegion || null,
+      region: imgRegion ? {
+        x: Math.round(imgRegion.x / dsf),
+        y: Math.round(imgRegion.y / dsf),
+        width: Math.round(imgRegion.width / dsf),
+        height: Math.round(imgRegion.height / dsf),
+      } : null,
     });
   }
 
@@ -141,6 +150,24 @@ export async function runReview(config, spinner) {
     }
   }
 
+  // ─── Assign stable issue numbers ─────────────────────────────────────────────
+  // Numbers follow the exact order the checklist prints them (category order
+  // below mirrors reportGenerator's CATEGORY_LABELS; severity order within a
+  // category, stable for ties) so the numbers drawn on the annotated
+  // screenshot always match the [#n] labels in checklist.md.
+  const CATEGORY_ORDER = ['spacing-layout', 'typography', 'contrast-color', 'broken-state'];
+  const SEVERITY_ORDER = { critical: 0, major: 1, minor: 2 };
+  const numbered = [];
+  for (const cat of CATEGORY_ORDER) {
+    numbered.push(
+      ...allIssues
+        .filter(i => i.category === cat)
+        .sort((a, b) => (SEVERITY_ORDER[a.severity] ?? 3) - (SEVERITY_ORDER[b.severity] ?? 3))
+    );
+  }
+  numbered.push(...allIssues.filter(i => !CATEGORY_ORDER.includes(i.category)));
+  numbered.forEach((issue, idx) => { issue.num = idx + 1; });
+
   // Close all browser pages
   for (const result of screenshotResults) {
     if (result.page) {
@@ -160,6 +187,7 @@ export async function runReview(config, spinner) {
       screenshotPath: capturedScreenshotPath,
       issues: allIssues,
       outputDir,
+      regionScale: primaryResult.deviceScaleFactor || 1,
     });
 
     outputFiles.push(annotatedPath);
