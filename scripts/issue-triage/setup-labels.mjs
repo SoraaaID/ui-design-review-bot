@@ -5,12 +5,12 @@
  * oleh Issue Triage Agent.
  *
  * Usage:
- *   GITHUB_TOKEN=xxx REPO_OWNER=SoraDev-ID REPO_NAME=ui-design-review-bot node setup-labels.mjs
+ *   GITHUB_TOKEN=xxx REPO_OWNER=SoraaaID REPO_NAME=ui-design-review-bot node setup-labels.mjs
  */
 
 import { Octokit } from '@octokit/rest';
 
-const { GITHUB_TOKEN, REPO_OWNER = 'SoraDev-ID', REPO_NAME = 'ui-design-review-bot' } = process.env;
+const { GITHUB_TOKEN, REPO_OWNER = 'SoraaaID', REPO_NAME = 'ui-design-review-bot' } = process.env;
 
 if (!GITHUB_TOKEN) {
   console.error('❌ Set env var: GITHUB_TOKEN');
